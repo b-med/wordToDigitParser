@@ -1,4 +1,4 @@
-# French word to digit parser :
+# French word to digit converter :
 
 A parser for French text that looks for numbers written in words and converts them to numbers written in digits.
 
