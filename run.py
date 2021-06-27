@@ -104,8 +104,8 @@ if __name__ == "__main__":
 
             # Split to fractions, thousands, millions, billions... :
             prod_sum = [] # 12500.03 = 12*1000 + 500*1 + 3/100
-            # numbers with fractional parts :
-            if 'virgule' in number :
+
+            if 'virgule' in number : # numbers with fractional parts
                 virgule_index = number.index('virgule')
                 prod_sum.append(
                         [number[virgule_index+1:], 'virgule'])
