@@ -148,11 +148,11 @@ if __name__ == "__main__":
                     prod[0] = prod[0][idx_cent+1:]
                     # compute hundreds :
                     if len(hundreds_tab) == 1 :
-                        n_tmp = 1
+                        n_h = 1
                     else :
                         # also for the case of "dix huit cent" for expl
-                        n_tmp = sum_under_80(hundreds_tab[:-1])
-                    partial_prod_sum += 100 * n_tmp
+                        n_h = sum_under_80(hundreds_tab[:-1])
+                    partial_prod_sum += 100 * n_h
                 # for the case of 80 :
                 if "quatre vingt" in " ".join(prod[0]) :
                     partial_prod_sum += 80
