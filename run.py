@@ -92,7 +92,7 @@ if __name__ == "__main__":
         # Convert phrase : 
         ####################
 
-        # To convert with bigger numbers first
+        # To convert bigger numbers first
         number_list.sort(lambda x,y: -cmp(len(x), len(y)))
         
         number_in_digits_list = [] # converted numbers
