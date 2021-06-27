@@ -11,6 +11,15 @@ import math
 input_file = sys.argv[1]
 
 
+def sum_under_80(ns_list):
+    n = 0
+    for ns in ns_list :
+        if ns in all_dic :
+            n += all_dic[ns]
+    return n
+
+
+
 if __name__ == "__main__":
 
     input_array = np.array(pd.read_table(input_file, header=None))
@@ -83,10 +92,10 @@ if __name__ == "__main__":
         # Convert phrase : 
         ####################
 
-        # Start with bigger numbers
+        # To convert with bigger numbers first
         number_list.sort(lambda x,y: -cmp(len(x), len(y)))
         
-        number_digits_list = [] # converted numbers
+        number_in_digits_list = [] # converted numbers
         for number in copy.deepcopy(number_list) :
 
             # remove the "et" conjunction :
@@ -94,7 +103,7 @@ if __name__ == "__main__":
                 number.remove("et")
 
             # Split to fractions, thousands, millions, billions... :
-            prod_sum = [] # sum of products
+            prod_sum = [] # 12500.03 = 12*1000 + 500*1 + 3/100
             # numbers with fractional parts :
             if 'virgule' in number :
                 virgule_index = number.index('virgule')
@@ -114,58 +123,52 @@ if __name__ == "__main__":
             if number :
                 prod_sum.append([number, 'un'])
 
-            # Conversion of future product sums :
+            # Compute the numerical value of each of
+            # fractions, thousands... (partial_prod_sum) :
             for idx_prod, prod in enumerate(prod_sum) :
-                # fractional part :
+
                 if prod[1] == 'virgule' :
+                    # fractional part : remove the leading zeroes
                     zeros = 0
                     while 'ze1ro' in prod[0] :
                         prod[0].remove('ze1ro')
                         zeros += 1
 
-                if prod[0] == [] :
-                     prod[0] = 1
-                else :
-                    partial_prod_sum = 0
-                    # contains 100 :
-                    hundred = ''
-                    if  'cent' in prod[0] :
-                        hundred = 'cent'
-                    elif 'cents' in  prod[0] :
-                        hundred = 'cents'
-                    if hundred != '' :
-                        idx_cent = prod[0].index(hundred)
-                        # trim :
-                        hundreds_tab = prod[0][0:idx_cent+1]
-                        prod[0] = prod[0][idx_cent+1:]
-                        # compute hundreds :
-                        if len(hundreds_tab) == 1 :
-                            n_tmp = 1
-                        else :
-                            n_tmp = 0
-                            # for the case of "dix huit cent" for expl
-                            for h in hundreds_tab[:-1] :
-                                if h in all_dic :
-                                    n_tmp += all_dic[h]
-                        partial_prod_sum += 100 * n_tmp
-                    # contains 80 :
-                    if "quatre vingt" in " ".join(prod[0]) :
-                        partial_prod_sum += 80
-                        # Trim :
-                        prod[0] = prod[0][2:]
-                    for n_p in prod[0] :
-                        if n_p in all_dic :
-                            partial_prod_sum += all_dic[n_p]
+                partial_prod_sum = 0
+                # for the case of 100 :
+                hundred = ''
+                if  'cent' in prod[0] :
+                    hundred = 'cent'
+                elif 'cents' in  prod[0] :
+                    hundred = 'cents'
+                if hundred != '' :
+                    idx_cent = prod[0].index(hundred)
+                    # trim :
+                    hundreds_tab = prod[0][0:idx_cent+1]
+                    prod[0] = prod[0][idx_cent+1:]
+                    # compute hundreds :
+                    if len(hundreds_tab) == 1 :
+                        n_tmp = 1
+                    else :
+                        # also for the case of "dix huit cent" for expl
+                        n_tmp = sum_under_80(hundreds_tab[:-1])
+                    partial_prod_sum += 100 * n_tmp
+                # for the case of 80 :
+                if "quatre vingt" in " ".join(prod[0]) :
+                    partial_prod_sum += 80
+                    # Trim :
+                    prod[0] = prod[0][2:]
+                partial_prod_sum += sum_under_80(prod[0])
 
                 prod[0] = []
                 if prod[1] == 'virgule' :
+                    # fractional part : put back the leading zeroes
                     for i in range(zeros) :
                         prod[0].append('ze1ro')
                 prod[0].append(partial_prod_sum)
-                prod_sum[idx_prod] = prod
 
             # Compute the sum of products :
-            number_digits = 0
+            number_in_digits = 0
             for prod in prod_sum :
                 if prod[1] == 'virgule' :
                     frac_part_len = 0
@@ -174,16 +177,18 @@ if __name__ == "__main__":
                         prod[0] = prod[0][1:]
                     frac_part_len += len(str(prod[0][0]))
                     # 0.08 = 8/(10^2) :
-                    number_digits += prod[0][0] / math.pow(10, frac_part_len)
+                    number_in_digits += prod[0][0] / math.pow(10, frac_part_len)
                 else :
                     if prod[1] in all_dic :
-                        number_digits += prod[0][0] * all_dic[prod[1]]
+                        number_in_digits += prod[0][0] * all_dic[prod[1]]
 
-            number_digits_list.append(number_digits)
+            number_in_digits_list.append(number_in_digits)
 
+        # Replace the numbers (in words) by
+        # the computed numbers (in digits):
         conv_phrase = phrase
         for nb_idx, nb in enumerate(number_list) :
             conv_phrase = conv_phrase.replace(
-                    " ".join(nb), str(number_digits_list[nb_idx]))
+                    " ".join(nb), str(number_in_digits_list[nb_idx]))
 
         print conv_phrase
